@@ -2,10 +2,8 @@
 
 import { useEffect, useRef } from "react";
 import { createChart, ColorType, IChartApi, ISeriesApi, CandlestickSeries } from "lightweight-charts";
-import type { StockCandles } from "@/lib/finnhub";
-
 interface StockChartProps {
-  data: StockCandles | null;
+  data: Array<{time: number, open: number, high: number, low: number, close: number}> | null;
   loading: boolean;
   error: string | null;
   marketClosed?: boolean;
@@ -67,16 +65,17 @@ export default function StockChart({ data, loading, error, marketClosed, timefra
   }, []);
 
   useEffect(() => {
-    if (!seriesRef.current || !data) return;
+    if (!seriesRef.current) return;
 
-    // Transform Finnhub format to TradingView format
-    const formattedData = data.t.map((time, index) => ({
-      time: time as import("lightweight-charts").Time,
-      open: data.o[index],
-      high: data.h[index],
-      low: data.l[index],
-      close: data.c[index],
-    })).sort((a, b) => (a.time as number) - (b.time as number));
+    if (!data) {
+      seriesRef.current.setData([]);
+      return;
+    }
+
+    const formattedData = data.map(d => ({
+      ...d,
+      time: d.time as import("lightweight-charts").Time
+    }));
 
     seriesRef.current.setData(formattedData);
     chartRef.current?.timeScale().fitContent();
@@ -99,7 +98,7 @@ export default function StockChart({ data, loading, error, marketClosed, timefra
       )}
       {!data && !loading && !error && (
         <div className="absolute inset-0 z-10 flex items-center justify-center bg-[#0d1117]">
-          <div className="text-gray-500 font-mono">No chart data available for this timeframe.</div>
+          <div className="text-gray-500 font-mono">No data available for this timeframe on free tier. Try 1M or above.</div>
         </div>
       )}
       <div ref={chartContainerRef} className="absolute inset-0" />

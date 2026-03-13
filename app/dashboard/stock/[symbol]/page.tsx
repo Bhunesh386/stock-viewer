@@ -12,10 +12,9 @@ import StockChart from "@/components/StockChart";
 import TradePanel from "@/components/TradePanel";
 import { 
   getStockQuote, 
-  getStockCandles, 
+  fetchCandles, 
   getStockProfile, 
   type StockQuote, 
-  type StockCandles, 
   type StockProfile 
 } from "@/lib/finnhub";
 
@@ -26,9 +25,9 @@ export default function StockDetailPage({ params }: { params: { symbol: string }
   const [email, setEmail] = useState("");
   const [quote, setQuote] = useState<StockQuote | null>(null);
   const [profile, setProfile] = useState<StockProfile | null>(null);
-  const [candles, setCandles] = useState<StockCandles | null>(null);
+  const [candles, setCandles] = useState<Array<{time: number, open: number, high: number, low: number, close: number}> | null>(null);
   
-  const [timeframe, setTimeframe] = useState<Timeframe>("1D");
+  const [timeframe, setTimeframe] = useState<Timeframe>("1M");
   const [loadingChart, setLoadingChart] = useState(false);
   const [chartError, setChartError] = useState<string | null>(null);
   const [marketClosed, setMarketClosed] = useState(false);
@@ -65,65 +64,11 @@ export default function StockDetailPage({ params }: { params: { symbol: string }
     setCandles(null);
     setMarketClosed(false);
 
-    // Calculate timestamps
-    const to = Math.floor(Date.now() / 1000); // always use current time as "to"
-    let from = to;
-    let resolution = "D";
-
-    switch (tf) {
-      case "1D":
-        from = to - 86400; // 24 hours ago
-        resolution = "30";
-        break;
-      case "1W":
-        from = to - 604800; // 7 days ago
-        resolution = "60";
-        break;
-      case "1M":
-        from = to - 2592000; // 30 days ago
-        resolution = "D";
-        break;
-      case "3M":
-        from = to - 7776000; // 90 days ago
-        resolution = "D";
-        break;
-      case "6M":
-        from = to - 15552000; // 180 days ago
-        resolution = "D";
-        break;
-      case "1Y":
-        from = to - 31536000; // 365 days ago
-        resolution = "D";
-        break;
-    }
-
     try {
-      let data = await getStockCandles(symbol, resolution, from, to);
-      let isRetry = false;
-
+      const data = await fetchCandles(symbol, tf);
+      setCandles(data);
       if (!data) {
-        let retryFrom = from;
-        if (tf === "1D") {
-          retryFrom = to - 86400 * 4;
-        } else if (tf === "1W") {
-          retryFrom = to - 604800 * 2;
-        } else {
-          retryFrom = from - 2592000;
-        }
-        
-        data = await getStockCandles(symbol, resolution, retryFrom, to);
-        if (data) {
-          isRetry = true;
-        }
-      }
-
-      if (data) {
-        setCandles(data);
-        if (tf === "1D" && isRetry) {
-          setMarketClosed(true);
-        }
-      } else {
-        setChartError("No candle data available for this timeframe. Market may be closed or symbol unsupported.");
+        setChartError("No data available for this timeframe on free tier. Try 1M or above.");
       }
     } catch {
       setChartError("Failed to load chart data");

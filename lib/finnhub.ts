@@ -86,3 +86,37 @@ export async function getStockProfile(symbol: string): Promise<StockProfile | nu
     return null;
   }
 }
+
+export async function fetchCandles(symbol: string, timeframe: string) {
+  const apiKey = process.env.NEXT_PUBLIC_FINNHUB_API_KEY;
+  const to = Math.floor(Date.now() / 1000);
+
+  const config: Record<string, { resolution: string; from: number }> = {
+    '1D': { resolution: '30', from: to - 2 * 24 * 60 * 60 },
+    '4D': { resolution: '60', from: to - 8 * 24 * 60 * 60 },
+    '1W': { resolution: '60', from: to - 14 * 24 * 60 * 60 },
+    '1M': { resolution: 'D', from: to - 30 * 24 * 60 * 60 },
+    '3M': { resolution: 'D', from: to - 90 * 24 * 60 * 60 },
+    '6M': { resolution: 'D', from: to - 180 * 24 * 60 * 60 },
+    '1Y': { resolution: 'D', from: to - 365 * 24 * 60 * 60 },
+  };
+
+  const { resolution, from } = config[timeframe] || config['1M'];
+
+  const url = `https://finnhub.io/api/v1/stock/candle?symbol=${symbol}&resolution=${resolution}&from=${from}&to=${to}&token=${apiKey}`;
+
+  const res = await fetch(url);
+  const data = await res.json();
+
+  if (!data || data.s === 'no_data' || !data.t || data.t.length === 0) {
+    return null;
+  }
+
+  return data.t.map((time: number, i: number) => ({
+    time: time,
+    open: data.o[i],
+    high: data.h[i],
+    low: data.l[i],
+    close: data.c[i],
+  })).sort((a: {time: number}, b: {time: number}) => a.time - b.time);
+}
