@@ -4,12 +4,16 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { motion, AnimatePresence } from "framer-motion";
+import { Loader2 } from "lucide-react";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [shake, setShake] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   const router = useRouter();
 
   // Check if already logged in
@@ -31,18 +35,32 @@ export default function LoginPage() {
 
     if (error) {
       setError(error.message);
+      setShake(true);
+      setTimeout(() => setShake(false), 500);
       setLoading(false);
     } else {
-      router.push("/dashboard");
+      setIsSuccess(true);
+      setTimeout(() => {
+        router.push("/dashboard");
+      }, 400);
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <div className="max-w-md w-full bg-card border border-cardBorder rounded-lg shadow-2xl p-8">
-        <h1 className="text-3xl font-bold tracking-widest text-stockGreen text-center mb-8">
-          STOCKTERM
-        </h1>
+      <AnimatePresence mode="wait">
+        {!isSuccess && (
+          <motion.div 
+            key="login-card"
+            initial={{ opacity: 0, y: 30 }}
+            animate={shake ? { opacity: 1, y: 0, x: [-10, 10, -10, 10, 0] } : { opacity: 1, y: 0, x: 0 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.4 }}
+            className="max-w-md w-full bg-card border border-cardBorder rounded-lg shadow-2xl p-8"
+          >
+            <h1 className="text-3xl font-bold tracking-widest text-stockGreen text-center mb-8">
+              STOCKTERM
+            </h1>
         <form onSubmit={handleLogin} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-secondary mb-2">Email Terminal ID</label>
@@ -76,8 +94,9 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-accent hover:bg-blue-600 text-white font-bold py-3 rounded transition uppercase tracking-widest disabled:opacity-50"
+            className="w-full bg-accent hover:bg-blue-600 text-white font-bold py-3 rounded transition uppercase tracking-widest disabled:opacity-50 flex justify-center items-center gap-2"
           >
+            {loading && <Loader2 className="animate-spin" size={18} />}
             {loading ? "AUTHENTICATING..." : "INITIALIZE SESSION"}
           </button>
         </form>
@@ -88,7 +107,9 @@ export default function LoginPage() {
             Request Access
           </Link>
         </div>
-      </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import toast from "react-hot-toast";
 import { getPortfolio, getHoldings, buyStock, sellStock, type Portfolio, type Holding } from "@/lib/trading";
 import { supabase } from "@/lib/supabase";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface TradePanelProps {
   symbol: string;
@@ -83,24 +84,35 @@ export default function TradePanel({ symbol, currentPrice }: TradePanelProps) {
   );
 
   return (
-    <div className="bg-card border border-gray-800 rounded-lg p-6 shadow-xl h-full flex flex-col justify-between">
+    <motion.div 
+      initial={{ x: 30, opacity: 0 }}
+      animate={{ x: 0, opacity: 1 }}
+      transition={{ type: "spring", stiffness: 300, damping: 25, duration: 0.4 }}
+      className="bg-card border border-gray-800 rounded-lg p-6 shadow-xl h-full flex flex-col justify-between will-change-transform"
+    >
       <div>
-        <div className="flex border-b border-gray-800 mb-6">
+        <div className="flex border-b border-gray-800 mb-6 relative">
           <button
             onClick={() => setActiveTab("BUY")}
-            className={`flex-1 py-3 text-center font-bold tracking-widest text-sm transition-colors ${
-              activeTab === "BUY" ? "text-stockGreen border-b-2 border-stockGreen" : "text-gray-500 hover:text-gray-300"
+            className={`relative flex-1 py-3 text-center font-bold tracking-widest text-sm transition-colors ${
+              activeTab === "BUY" ? "text-stockGreen" : "text-gray-500 hover:text-gray-300"
             }`}
           >
             ORDER BUY
+            {activeTab === "BUY" && (
+              <motion.div layoutId="tradeTab" className="absolute bottom-[-1px] left-0 right-0 h-[2px] bg-stockGreen" />
+            )}
           </button>
           <button
             onClick={() => setActiveTab("SELL")}
-            className={`flex-1 py-3 text-center font-bold tracking-widest text-sm transition-colors ${
-              activeTab === "SELL" ? "text-stockRed border-b-2 border-stockRed" : "text-gray-500 hover:text-gray-300"
+            className={`relative flex-1 py-3 text-center font-bold tracking-widest text-sm transition-colors ${
+              activeTab === "SELL" ? "text-stockRed" : "text-gray-500 hover:text-gray-300"
             }`}
           >
             ORDER SELL
+            {activeTab === "SELL" && (
+              <motion.div layoutId="tradeTab" className="absolute bottom-[-1px] left-0 right-0 h-[2px] bg-stockRed" />
+            )}
           </button>
         </div>
 
@@ -158,6 +170,6 @@ export default function TradePanel({ symbol, currentPrice }: TradePanelProps) {
           {loading ? "PROCESSING..." : `CONFIRM ${activeTab}`}
         </button>
       </div>
-    </div>
+    </motion.div>
   );
 }

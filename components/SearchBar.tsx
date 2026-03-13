@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Search } from "lucide-react";
+import { motion } from "framer-motion";
 
 export default function SearchBar({ onSearch }: { onSearch: (symbol: string) => void }) {
   const [input, setInput] = useState("");
@@ -15,7 +16,18 @@ export default function SearchBar({ onSearch }: { onSearch: (symbol: string) => 
   };
 
   return (
-    <form onSubmit={handleSubmit} className="w-full relative">
+    <motion.form 
+      onSubmit={handleSubmit} 
+      className="w-full flex-grow relative mx-auto"
+      whileFocus="focus"
+      whileTap="focus"
+      animate="blur"
+      variants={{
+        focus: { scale: 1.02 },
+        blur: { scale: 1 }
+      }}
+      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+    >
       <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
         <Search size={18} className="text-gray-500" />
       </div>
@@ -32,6 +44,6 @@ export default function SearchBar({ onSearch }: { onSearch: (symbol: string) => 
       >
         SEARCH
       </button>
-    </form>
+    </motion.form>
   );
 }

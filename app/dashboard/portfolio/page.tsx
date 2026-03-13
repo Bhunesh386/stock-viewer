@@ -8,6 +8,8 @@ import { getStockQuote } from "@/lib/finnhub";
 import { supabase } from "@/lib/supabase";
 import Header from "@/components/Header";
 import toast from "react-hot-toast";
+import { motion, AnimatePresence } from "framer-motion";
+import AnimatedNumber from "@/components/AnimatedNumber";
 
 type EnrichedHolding = Holding & { currentPrice: number, totalValue: number, pl: number, plPercent: number };
 
@@ -146,24 +148,39 @@ export default function PortfolioPage() {
 
         {/* Top Stats Row */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="bg-card border border-cardBorder p-6 shadow-xl rounded-lg text-center lg:text-left transition-colors hover:border-cardHoverBorder">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-card border border-cardBorder p-6 shadow-xl rounded-lg text-center lg:text-left transition-colors hover:border-cardHoverBorder">
             <h2 className="text-secondary text-xs tracking-widest uppercase mb-2">Starting Balance</h2>
-            <div className="text-3xl font-mono text-white">$10,000.00</div>
-          </div>
-          <div className="bg-card border border-cardBorder p-6 shadow-xl rounded-lg text-center lg:text-left transition-colors hover:border-cardHoverBorder">
-            <h2 className="text-secondary text-xs tracking-widest uppercase mb-2">Cash Available</h2>
-            <div className="text-3xl font-mono text-stockGreen">${portfolio.cash_balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-          </div>
-          <div className="bg-card border border-cardBorder p-6 shadow-xl rounded-lg text-center lg:text-left transition-colors hover:border-cardHoverBorder">
-            <h2 className="text-secondary text-xs tracking-widest uppercase mb-2">Portfolio Value</h2>
-            <div className="text-3xl font-mono text-white">${totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-          </div>
-          <div className="bg-card border border-cardBorder p-6 shadow-xl rounded-lg text-center lg:text-left transition-colors hover:border-cardHoverBorder">
-            <h2 className="text-secondary text-xs tracking-widest uppercase mb-2">Total P&L</h2>
-            <div className={`text-3xl font-mono ${totalPL >= 0 ? 'text-stockGreen' : 'text-stockRed'}`}>
-              {totalPL >= 0 ? '+' : ''}${totalPL.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ({totalPL >= 0 ? '+' : ''}{totalPLPercent.toFixed(2)}%)
+            <div className="text-3xl font-mono text-white">
+              <AnimatedNumber value={10000} format={(v) => `$${v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} />
             </div>
-          </div>
+          </motion.div>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-card border border-cardBorder p-6 shadow-xl rounded-lg text-center lg:text-left transition-colors hover:border-cardHoverBorder">
+            <h2 className="text-secondary text-xs tracking-widest uppercase mb-2">Cash Available</h2>
+            <div className="text-3xl font-mono text-stockGreen">
+              <AnimatedNumber value={portfolio.cash_balance} format={(v) => `$${v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} />
+            </div>
+          </motion.div>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="bg-card border border-cardBorder p-6 shadow-xl rounded-lg text-center lg:text-left transition-colors hover:border-cardHoverBorder">
+            <h2 className="text-secondary text-xs tracking-widest uppercase mb-2">Portfolio Value</h2>
+            <div className="text-3xl font-mono text-white">
+              <AnimatedNumber value={totalValue} format={(v) => `$${v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} />
+            </div>
+          </motion.div>
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} 
+            whileHover={{ scale: 1.02 }}
+            transition={{ delay: 0.4 }} 
+            className={`bg-card border p-6 shadow-xl rounded-lg text-center lg:text-left transition-all relative ${totalPL >= 0 ? "border-stockGreen/30 shadow-[0_0_15px_rgba(0,255,136,0.15)] glow-pulse" : "border-stockRed/30 shadow-[0_0_15px_rgba(255,68,68,0.15)] glow-pulse"}`}
+          >
+            <h2 className="text-secondary text-xs tracking-widest uppercase mb-2">Total P&L</h2>
+            <div className={`text-3xl font-mono flex gap-1 justify-center lg:justify-start items-center ${totalPL >= 0 ? 'text-stockGreen' : 'text-stockRed'}`}>
+              <span>{totalPL >= 0 ? '+' : ''}</span>
+              <AnimatedNumber value={totalPL} format={(v) => `$${Math.abs(v).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} />
+              <span className="ml-2 text-xl">({totalPL >= 0 ? '+' : ''}</span>
+              <AnimatedNumber value={Math.abs(totalPLPercent)} format={(v) => `${v.toFixed(2)}`} className="text-xl" />
+              <span className="text-xl">%)</span>
+            </div>
+          </motion.div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -186,37 +203,53 @@ export default function PortfolioPage() {
                     <th className="pb-3 px-2 text-center">Action</th>
                   </tr>
                 </thead>
-                <tbody>
-                  {holdings.map((h) => (
-                    <tr key={h.id} className="border-b border-cardBorder/50 hover:bg-cardBorder/30 transition group">
-                      <td className="py-4 px-2 font-bold group-hover:text-accent transition-colors cursor-pointer" onClick={() => router.push(`/dashboard/stock/${h.symbol}`)}>
-                        {h.symbol}
-                      </td>
-                      <td className="py-4 px-2 text-right">{h.quantity}</td>
-                      <td className="py-4 px-2 text-right">${h.avg_buy_price.toFixed(2)}</td>
-                      <td className="py-4 px-2 text-right">${h.currentPrice.toFixed(2)}</td>
-                      <td className="py-4 px-2 text-right text-white">${h.totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                      <td className={`py-4 px-2 text-right ${h.pl >= 0 ? 'text-stockGreen' : 'text-stockRed'}`}>
-                        {h.pl >= 0 ? '+' : ''}${h.pl.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      </td>
-                      <td className={`py-4 px-2 text-right ${h.pl >= 0 ? 'text-stockGreen' : 'text-stockRed'}`}>
-                        {h.pl >= 0 ? '+' : ''}{h.plPercent.toFixed(2)}%
-                      </td>
-                      <td className="py-4 px-2 text-center">
-                        <button 
-                          onClick={() => {
-                            setSellHolding(h);
-                            setSellQty(h.quantity); // default to max
-                            setSellModalOpen(true);
-                          }}
-                          className="bg-stockRed/10 text-stockRed border border-stockRed hover:bg-stockRed hover:text-white font-bold py-1 px-3 text-xs tracking-widest transition-colors rounded"
-                        >
-                          SELL
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
+                <motion.tbody
+                  variants={{
+                    hidden: { opacity: 0 },
+                    visible: { opacity: 1, transition: { staggerChildren: 0.05 } }
+                  }}
+                  initial="hidden"
+                  animate="visible"
+                >
+                  <AnimatePresence>
+                    {holdings.map((h) => (
+                      <motion.tr 
+                        layout
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 50, transition: { duration: 0.3 } }}
+                        key={h.id} 
+                        className="border-b border-cardBorder/50 hover:bg-cardBorder/30 transition group"
+                      >
+                        <td className="py-4 px-2 font-bold group-hover:text-accent transition-colors cursor-pointer" onClick={() => router.push(`/dashboard/stock/${h.symbol}`)}>
+                          {h.symbol}
+                        </td>
+                        <td className="py-4 px-2 text-right">{h.quantity}</td>
+                        <td className="py-4 px-2 text-right">${h.avg_buy_price.toFixed(2)}</td>
+                        <td className="py-4 px-2 text-right">${h.currentPrice.toFixed(2)}</td>
+                        <td className="py-4 px-2 text-right text-white">${h.totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                        <td className={`py-4 px-2 text-right ${h.pl >= 0 ? 'text-stockGreen' : 'text-stockRed'}`}>
+                          {h.pl >= 0 ? '+' : ''}${h.pl.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </td>
+                        <td className={`py-4 px-2 text-right ${h.pl >= 0 ? 'text-stockGreen' : 'text-stockRed'}`}>
+                          {h.pl >= 0 ? '+' : ''}{h.plPercent.toFixed(2)}%
+                        </td>
+                        <td className="py-4 px-2 text-center">
+                          <button 
+                            onClick={() => {
+                              setSellHolding(h);
+                              setSellQty(h.quantity); // default to max
+                              setSellModalOpen(true);
+                            }}
+                            className="bg-stockRed/10 text-stockRed border border-stockRed hover:bg-stockRed hover:text-white font-bold py-1 px-3 text-xs tracking-widest transition-colors rounded"
+                          >
+                            SELL
+                          </button>
+                        </td>
+                      </motion.tr>
+                    ))}
+                  </AnimatePresence>
+                </motion.tbody>
               </table>
             )}
           </div>

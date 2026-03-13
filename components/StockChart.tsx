@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { createChart, ColorType, IChartApi, ISeriesApi, CandlestickSeries } from "lightweight-charts";
+import { motion } from "framer-motion";
 interface StockChartProps {
   data: Array<{time: number, open: number, high: number, low: number, close: number}> | null;
   loading: boolean;
@@ -85,8 +86,8 @@ export default function StockChart({ data, loading, error, marketClosed, timefra
   return (
     <div className="relative w-full h-[400px] border border-gray-800 rounded-lg overflow-hidden bg-[#0d1117]">
       {loading && (
-        <div className="absolute inset-0 z-10 flex items-center justify-center bg-[#0d1117]/80">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-stockGreen"></div>
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-[#0d1117] animate-pulse">
+           <div className="text-stockGreen font-mono opacity-50 tracking-widest">LOADING DATA...</div>
         </div>
       )}
       {error && !loading && (
@@ -101,7 +102,14 @@ export default function StockChart({ data, loading, error, marketClosed, timefra
           <div className="text-gray-500 font-mono">No data available for this timeframe on free tier. Try 1M or above.</div>
         </div>
       )}
-      <div ref={chartContainerRef} className="absolute inset-0" />
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: (!loading && data) ? 1 : 0 }}
+        transition={{ duration: 0.6 }}
+        className="absolute inset-0"
+      >
+        <div ref={chartContainerRef} className="w-full h-full" />
+      </motion.div>
       {marketClosed && timeframe === "1D" && !loading && data && (
         <div className="absolute top-4 left-4 z-10 text-xs font-mono text-gray-400 bg-[#0d1117]/80 px-2 py-1 rounded border border-gray-800">
           Market Closed — Showing Last Session

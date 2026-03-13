@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #0a0a0f;
+  --card-bg: #0f1117;
+  --card-border: #1e2433;
+  --card-hover-border: #2a3a5c;
+  --text-primary: #e8eaf0;
+  --text-secondary: #6b7280;
+  --color-green: #00ff88;
+  --color-red: #ff4444;
+  --color-accent: #3b82f6;
+}
+
+body {
+  color: var(--text-primary);
+  background: linear-gradient(135deg, #050508 0%, #0a0a0f 50%, #080a12 100%);
+  background-size: 200% 200%;
+  animation: bg-shift 15s ease infinite;
+}
+
+@keyframes bg-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.05),
+    rgba(0, 0, 0, 0.05) 1px,
+    transparent 1px,
+    transparent 4px
+  );
+  pointer-events: none;
+  z-index: 9999;
+}

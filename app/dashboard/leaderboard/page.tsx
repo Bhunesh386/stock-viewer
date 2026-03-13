@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import Header from "@/components/Header";
+import { motion, AnimatePresence } from "framer-motion";
+import AnimatedNumber from "@/components/AnimatedNumber";
 
 interface LeaderboardEntry {
   user_id: string;
@@ -82,34 +84,49 @@ export default function LeaderboardPage() {
                   <th className="py-4 px-6 text-right">P/L vs $10K</th>
                 </tr>
               </thead>
-              <tbody>
-                {leaderboard.map((entry, index) => {
-                  const isCurrentUser = entry.user_id === currentUserId;
-                  const username = entry.email.split('@')[0];
-                  
-                  return (
-                    <tr 
-                      key={entry.user_id} 
-                      className={`border-b border-gray-800/50 transition ${isCurrentUser ? 'bg-gray-800/50' : 'hover:bg-gray-800/30'}`}
-                    >
-                      <td className="py-5 px-6 font-mono font-bold">
-                        <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full ${index === 0 ? 'bg-yellow-500/20 text-yellow-500' : index === 1 ? 'bg-gray-300/20 text-gray-300' : index === 2 ? 'bg-orange-600/20 text-orange-500' : 'bg-transparent text-gray-500'}`}>
-                          {index + 1}
-                        </span>
-                      </td>
-                      <td className="py-5 px-6 font-bold tracking-wide">
-                        {username} {isCurrentUser && <span className="ml-2 text-xs bg-stockGreen/20 text-stockGreen px-2 py-1 rounded">YOU</span>}
-                      </td>
-                      <td className="py-5 px-6 font-mono text-right text-lg">
-                        ${entry.totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      </td>
-                      <td className={`py-5 px-6 font-mono text-right ${entry.pl >= 0 ? 'text-stockGreen' : 'text-stockRed'}`}>
-                        {entry.pl >= 0 ? '+' : ''}${entry.pl.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
+              <motion.tbody
+                variants={{
+                  hidden: { opacity: 0 },
+                  visible: { opacity: 1, transition: { staggerChildren: 0.05 } }
+                }}
+                initial="hidden"
+                animate="visible"
+              >
+                <AnimatePresence>
+                  {leaderboard.map((entry, index) => {
+                    const isCurrentUser = entry.user_id === currentUserId;
+                    const username = entry.email.split('@')[0];
+                    
+                    return (
+                      <motion.tr 
+                        layout
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        transition={{ duration: 0.4 }}
+                        key={entry.user_id} 
+                        className={`border-b border-gray-800/50 transition ${isCurrentUser ? 'bg-gray-800/50 shadow-[0_0_15px_rgba(0,255,136,0.1)] glow-pulse relative z-10' : 'hover:bg-gray-800/30'}`}
+                      >
+                        <td className="py-5 px-6 font-mono font-bold">
+                          <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full ${index === 0 ? 'bg-yellow-500/20 text-yellow-500' : index === 1 ? 'bg-gray-300/20 text-gray-300' : index === 2 ? 'bg-orange-600/20 text-orange-500' : 'bg-transparent text-gray-500'}`}>
+                            <AnimatedNumber value={index + 1} format={(v) => Math.round(v).toString()} />
+                          </span>
+                        </td>
+                        <td className="py-5 px-6 font-bold tracking-wide">
+                          {username} {isCurrentUser && <span className="ml-2 text-xs bg-stockGreen/20 text-stockGreen px-2 py-1 rounded">YOU</span>}
+                        </td>
+                        <td className="py-5 px-6 font-mono text-right text-lg text-white">
+                          <AnimatedNumber value={entry.totalValue} format={(v) => `$${v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} />
+                        </td>
+                        <td className={`py-5 px-6 font-mono text-right flex justify-end items-center gap-1 ${entry.pl >= 0 ? 'text-stockGreen' : 'text-stockRed'}`}>
+                          <span>{entry.pl >= 0 ? '+' : ''}</span>
+                          <AnimatedNumber value={Math.abs(entry.pl)} format={(v) => `$${v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} />
+                        </td>
+                      </motion.tr>
+                    );
+                  })}
+                </AnimatePresence>
+              </motion.tbody>
             </table>
           </div>
         )}
