@@ -1,4 +1,5 @@
 import type { StockQuote } from "@/lib/finnhub";
+import Link from "next/link";
 
 interface StockCardProps {
   symbol: string;
@@ -24,7 +25,7 @@ export default function StockCard({ symbol, quote, error, isValidating }: StockC
   const sign = isPositive ? "+" : "";
 
   return (
-    <div className={`bg-card p-4 rounded-lg border ${isValidating ? 'border-gray-600 opacity-80' : 'border-gray-800'} flex flex-col justify-between h-28 hover:border-gray-500 transition shadow-lg`}>
+    <Link href={`/dashboard/stock/${symbol}`} className={`block bg-card p-4 rounded-lg border ${isValidating ? 'border-gray-600 opacity-80' : 'border-gray-800'} flex flex-col justify-between h-28 hover:border-gray-500 transition shadow-lg`}>
       <div className="flex justify-between items-start">
         <h3 className="text-xl font-bold tracking-wider">{symbol}</h3>
         <span className={`text-sm font-mono ${colorClass}`}>
@@ -37,6 +38,6 @@ export default function StockCard({ symbol, quote, error, isValidating }: StockC
           {sign}{quote.d.toFixed(2)}
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
