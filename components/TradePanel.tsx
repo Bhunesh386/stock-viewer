@@ -112,7 +112,7 @@ export default function TradePanel({ symbol, currentPrice }: TradePanelProps) {
               min="1"
               value={quantity}
               onChange={(e) => setQuantity(e.target.value ? parseInt(e.target.value) : "")}
-              className="w-full bg-background border border-gray-700 rounded p-4 text-white font-mono text-xl focus:outline-none focus:border-gray-500 transition"
+              className="w-full bg-background border border-cardBorder rounded p-4 text-white font-mono text-xl focus:outline-none focus:border-accent focus:shadow-[0_0_10px_rgba(59,130,246,0.3)] transition-all"
               placeholder="0"
             />
           </div>
@@ -151,8 +151,8 @@ export default function TradePanel({ symbol, currentPrice }: TradePanelProps) {
           disabled={loading || parsedQty <= 0 || (activeTab === "BUY" ? !canBuy : !canSell)}
           className={`w-full py-4 rounded font-bold tracking-widest transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
             activeTab === "BUY" 
-              ? "bg-stockGreen/10 text-stockGreen hover:bg-stockGreen hover:text-black border border-stockGreen" 
-              : "bg-stockRed/10 text-stockRed hover:bg-stockRed hover:text-black border border-stockRed"
+              ? "bg-stockGreen text-black hover:bg-green-400 border-none" 
+              : "bg-stockRed text-white hover:bg-red-500 border-none"
           }`}
         >
           {loading ? "PROCESSING..." : `CONFIRM ${activeTab}`}

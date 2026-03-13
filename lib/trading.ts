@@ -32,8 +32,18 @@ export async function getPortfolio(userId: string) {
     .from('portfolios')
     .select('*')
     .eq('user_id', userId)
-    .single();
+    .maybeSingle();
   if (error) throw error;
+
+  if (!data) {
+    const { data: newPortfolio, error: insertError } = await supabase
+      .from('portfolios')
+      .insert({ user_id: userId, cash_balance: 10000 })
+      .select('*')
+      .single();
+    if (insertError) throw insertError;
+    return newPortfolio as Portfolio;
+  }
   return data as Portfolio;
 }
 

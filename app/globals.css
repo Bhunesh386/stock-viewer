@@ -3,11 +3,15 @@
 @tailwind utilities;
 
 :root {
-  --background: #0a0a0a;
-  --card-bg: #111827;
-  --text-primary: #e6edf3;
+  --background: #0a0a0f;
+  --card-bg: #0f1117;
+  --card-border: #1e2433;
+  --card-hover-border: #2a3a5c;
+  --text-primary: #e8eaf0;
+  --text-secondary: #6b7280;
   --color-green: #00ff88;
-  --color-red: #ff3b3b;
+  --color-red: #ff4444;
+  --color-accent: #3b82f6;
 }
 
 body {

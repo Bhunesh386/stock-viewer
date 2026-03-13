@@ -11,9 +11,13 @@ const config: Config = {
       colors: {
         background: "var(--background)",
         card: "var(--card-bg)",
+        cardBorder: "var(--card-border)",
+        cardHoverBorder: "var(--card-hover-border)",
         primary: "var(--text-primary)",
+        secondary: "var(--text-secondary)",
         stockGreen: "var(--color-green)",
         stockRed: "var(--color-red)",
+        accent: "var(--color-accent)",
       },
       fontFamily: {
         mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', '"Liberation Mono"', '"Courier New"', 'monospace'],

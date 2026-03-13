@@ -14,7 +14,7 @@ export default function Header({ email }: { email: string }) {
   };
 
   return (
-    <header className="flex flex-col md:flex-row justify-between items-center p-4 border-b border-gray-800 bg-background text-primary space-y-4 md:space-y-0">
+    <header className="flex flex-col md:flex-row justify-between items-center p-4 border-b border-cardBorder bg-card text-primary space-y-4 md:space-y-0">
       <Link href="/dashboard" className="text-xl font-bold tracking-widest text-stockGreen">
         STOCKTERM
       </Link>
