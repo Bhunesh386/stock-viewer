@@ -6,12 +6,14 @@ import { supabase } from "@/lib/supabase";
 import Header from "@/components/Header";
 import SearchBar from "@/components/SearchBar";
 import StockCard from "@/components/StockCard";
+import PortfolioSummary from "@/components/PortfolioSummary";
 import { getStockQuote, type StockQuote } from "@/lib/finnhub";
 
 const DEFAULT_SYMBOLS = ["AAPL", "TSLA", "GOOGL", "MSFT", "AMZN", "NVDA", "META", "NFLX"];
 
 export default function DashboardPage() {
   const [email, setEmail] = useState<string>("");
+  const [userId, setUserId] = useState<string>("");
   const [symbols, setSymbols] = useState<string[]>(DEFAULT_SYMBOLS);
   const [quotes, setQuotes] = useState<Record<string, StockQuote | null>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -24,6 +26,7 @@ export default function DashboardPage() {
         router.push("/");
       } else {
         setEmail(session.user.email || "Unknown Terminal ID");
+        setUserId(session.user.id);
       }
     });
 
@@ -99,6 +102,8 @@ export default function DashboardPage() {
         <div className="max-w-xl mx-auto mb-8">
           <SearchBar onSearch={handleSearch} />
         </div>
+
+        {userId && <PortfolioSummary userId={userId} />}
 
         {loading ? (
           <div className="flex justify-center mt-20">

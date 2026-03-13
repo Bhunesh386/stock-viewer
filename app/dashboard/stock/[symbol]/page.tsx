@@ -9,6 +9,7 @@ import Header from "@/components/Header";
 import StockInfoPanel from "@/components/StockInfoPanel";
 import TimeframeSelector, { Timeframe } from "@/components/TimeframeSelector";
 import StockChart from "@/components/StockChart";
+import TradePanel from "@/components/TradePanel";
 import { 
   getStockQuote, 
   getStockCandles, 
@@ -153,9 +154,16 @@ export default function StockDetailPage({ params }: { params: { symbol: string }
         
         <StockInfoPanel quote={quote} profile={profile} symbol={symbol} />
 
-        <div className="bg-card p-4 sm:p-6 rounded-lg border border-gray-800 shadow-xl">
-          <TimeframeSelector active={timeframe} onSelect={setTimeframe} />
-          <StockChart data={candles} loading={loadingChart} error={chartError} marketClosed={marketClosed} timeframe={timeframe} />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 bg-card p-4 sm:p-6 rounded-lg border border-gray-800 shadow-xl h-[500px] flex flex-col">
+            <TimeframeSelector active={timeframe} onSelect={setTimeframe} />
+            <div className="relative flex-grow mt-4">
+              <StockChart data={candles} loading={loadingChart} error={chartError} marketClosed={marketClosed} timeframe={timeframe} />
+            </div>
+          </div>
+          <div className="h-[500px]">
+            <TradePanel symbol={symbol} currentPrice={quote?.c || 0} />
+          </div>
         </div>
       </main>
     </div>
