@@ -30,6 +30,7 @@ export default function StockDetailPage({ params }: { params: { symbol: string }
   const [timeframe, setTimeframe] = useState<Timeframe>("1D");
   const [loadingChart, setLoadingChart] = useState(false);
   const [chartError, setChartError] = useState<string | null>(null);
+  const [marketClosed, setMarketClosed] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -61,43 +62,65 @@ export default function StockDetailPage({ params }: { params: { symbol: string }
     setLoadingChart(true);
     setChartError(null);
     setCandles(null);
+    setMarketClosed(false);
 
     // Calculate timestamps
-    const to = Math.floor(Date.now() / 1000);
+    const to = Math.floor(Date.now() / 1000); // always use current time as "to"
     let from = to;
     let resolution = "D";
 
     switch (tf) {
-      case "1D": // 1 min resolution, 1 day back (ignoring weekends is hard by exact hours, so just 24h)
-        from = to - 24 * 60 * 60;
-        resolution = "1";
+      case "1D":
+        from = to - 86400; // 24 hours ago
+        resolution = "30";
         break;
-      case "1W": // 15 min, 7 days
-        from = to - 7 * 24 * 60 * 60;
-        resolution = "15";
-        break;
-      case "1M": // 60 min, 30 days
-        from = to - 30 * 24 * 60 * 60;
+      case "1W":
+        from = to - 604800; // 7 days ago
         resolution = "60";
         break;
-      case "3M": // daily, 90 days
-        from = to - 90 * 24 * 60 * 60;
+      case "1M":
+        from = to - 2592000; // 30 days ago
         resolution = "D";
         break;
-      case "6M": // daily, 180 days
-        from = to - 180 * 24 * 60 * 60;
+      case "3M":
+        from = to - 7776000; // 90 days ago
         resolution = "D";
         break;
-      case "1Y": // daily, 365 days
-        from = to - 365 * 24 * 60 * 60;
+      case "6M":
+        from = to - 15552000; // 180 days ago
+        resolution = "D";
+        break;
+      case "1Y":
+        from = to - 31536000; // 365 days ago
         resolution = "D";
         break;
     }
 
     try {
-      const data = await getStockCandles(symbol, resolution, from, to);
+      let data = await getStockCandles(symbol, resolution, from, to);
+      let isRetry = false;
+
+      if (!data) {
+        let retryFrom = from;
+        if (tf === "1D") {
+          retryFrom = to - 86400 * 4;
+        } else if (tf === "1W") {
+          retryFrom = to - 604800 * 2;
+        } else {
+          retryFrom = from - 2592000;
+        }
+        
+        data = await getStockCandles(symbol, resolution, retryFrom, to);
+        if (data) {
+          isRetry = true;
+        }
+      }
+
       if (data) {
         setCandles(data);
+        if (tf === "1D" && isRetry) {
+          setMarketClosed(true);
+        }
       } else {
         setChartError("No candle data available for this timeframe. Market may be closed or symbol unsupported.");
       }
@@ -132,7 +155,7 @@ export default function StockDetailPage({ params }: { params: { symbol: string }
 
         <div className="bg-card p-4 sm:p-6 rounded-lg border border-gray-800 shadow-xl">
           <TimeframeSelector active={timeframe} onSelect={setTimeframe} />
-          <StockChart data={candles} loading={loadingChart} error={chartError} />
+          <StockChart data={candles} loading={loadingChart} error={chartError} marketClosed={marketClosed} timeframe={timeframe} />
         </div>
       </main>
     </div>

@@ -8,9 +8,11 @@ interface StockChartProps {
   data: StockCandles | null;
   loading: boolean;
   error: string | null;
+  marketClosed?: boolean;
+  timeframe?: string;
 }
 
-export default function StockChart({ data, loading, error }: StockChartProps) {
+export default function StockChart({ data, loading, error, marketClosed, timeframe }: StockChartProps) {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const seriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
@@ -74,7 +76,7 @@ export default function StockChart({ data, loading, error }: StockChartProps) {
       high: data.h[index],
       low: data.l[index],
       close: data.c[index],
-    }));
+    })).sort((a, b) => (a.time as number) - (b.time as number));
 
     seriesRef.current.setData(formattedData);
     chartRef.current?.timeScale().fitContent();
@@ -101,6 +103,11 @@ export default function StockChart({ data, loading, error }: StockChartProps) {
         </div>
       )}
       <div ref={chartContainerRef} className="absolute inset-0" />
+      {marketClosed && timeframe === "1D" && !loading && data && (
+        <div className="absolute top-4 left-4 z-10 text-xs font-mono text-gray-400 bg-[#0d1117]/80 px-2 py-1 rounded border border-gray-800">
+          Market Closed — Showing Last Session
+        </div>
+      )}
     </div>
   );
 }
