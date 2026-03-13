@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import toast from "react-hot-toast";
 import { getPortfolio, getHoldings, buyStock, sellStock, type Portfolio, type Holding } from "@/lib/trading";
 import { supabase } from "@/lib/supabase";
@@ -18,6 +18,15 @@ export default function TradePanel({ symbol, currentPrice }: TradePanelProps) {
   const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  const fetchData = useCallback(async (uid: string) => {
+    try {
+      const pf = await getPortfolio(uid);
+      setPortfolio(pf);
+      const hlds = await getHoldings(uid);
+      setUserHolding(hlds.find(h => h.symbol === symbol) || null);
+    } catch {}
+  }, [symbol]);
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
@@ -32,16 +41,7 @@ export default function TradePanel({ symbol, currentPrice }: TradePanelProps) {
     };
     window.addEventListener("focus", onFocus);
     return () => window.removeEventListener("focus", onFocus);
-  }, [symbol, userId]);
-
-  const fetchData = async (uid: string) => {
-    try {
-      const pf = await getPortfolio(uid);
-      setPortfolio(pf);
-      const hlds = await getHoldings(uid);
-      setUserHolding(hlds.find(h => h.symbol === symbol) || null);
-    } catch {}
-  };
+  }, [userId, fetchData]);
 
   const parsedQty = typeof quantity === "number" ? quantity : 0;
   const estimatedValue = parsedQty * currentPrice;
@@ -67,8 +67,8 @@ export default function TradePanel({ symbol, currentPrice }: TradePanelProps) {
         toast.success(`Sold ${parsedQty} shares of ${symbol}`);
         success = true;
       }
-    } catch (err: any) {
-      toast.error(err.message || "Trade failed");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Trade failed");
     } finally {
       setLoading(false);
       if (success) {

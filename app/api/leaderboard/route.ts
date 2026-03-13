@@ -48,7 +48,7 @@ export async function GET() {
       
       return {
         user_id: p.user_id,
-        email: p.email || (p as any).username || `user_${p.user_id.substring(0,6)}@hidden.com`, // Fallback since auth.users isn't readable via anon client
+        email: p.email || (p as Record<string, unknown>).username || `user_${p.user_id.substring(0,6)}@hidden.com`, // Fallback since auth.users isn't readable via anon client
         totalValue,
         pl
       };
@@ -57,7 +57,7 @@ export async function GET() {
     leaderboard.sort((a, b) => b.totalValue - a.totalValue);
     
     return NextResponse.json(leaderboard);
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+  } catch (err: unknown) {
+    return NextResponse.json({ error: err instanceof Error ? err.message : "Unknown error" }, { status: 500 });
   }
 }
